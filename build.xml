@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="net.evalcode.services.directory" basedir="." default="build" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+
+  <!-- properties -->
+  <property file="build.properties"/>
+  <property url="${build.properties.common}"/>
+  <property url="${build.properties.test}"/>
+
+  <mkdir dir="${dir.lib.build}"/>
+  <get src="${net.evalcode.util.build.repository}/${net.evalcode.util.build.common.module}/${net.evalcode.util.build.common.version}/${net.evalcode.util.build.common.module}-${net.evalcode.util.build.common.version}-${net.evalcode.util.build.common.artifact}" dest="${dir.lib.build}/${net.evalcode.util.build.common.artifact}" usetimestamp="true"/>
+  <ant antfile="${dir.lib.build}/${net.evalcode.util.build.common.artifact}" target="install.build" inheritall="false"/>
+  <import file="${dir.lib.build}/${net.evalcode.util.build.common.artifact}"/>
+
+  <mkdir dir="${dir.lib.test}"/>
+  <get src="${net.evalcode.util.build.repository}/${net.evalcode.util.build.test.module}/${net.evalcode.util.build.test.version}/${net.evalcode.util.build.test.module}-${net.evalcode.util.build.test.version}-${net.evalcode.util.build.test.artifact}" dest="${dir.lib.test}/${net.evalcode.util.build.test.artifact}" usetimestamp="true"/>
+  <ant antfile="${dir.lib.test}/${net.evalcode.util.build.test.artifact}" target="install.test" inheritall="false"/>
+  <import file="${dir.lib.test}/${net.evalcode.util.build.test.artifact}"/>
+
+
+  <!-- path: resources -->
+  <fileset id="resources.main" dir="${dir.src.main}">
+    <exclude name="**/*.java"/>
+  </fileset>
+  <fileset id="resources.test" dir="${dir.src.test}">
+    <exclude name="**/*.java"/>
+  </fileset>
+
+
+  <!-- environment settings -->
+  <target name="env">
+    <!-- assemble version string ${net.evalcode.bundle.version.build} -->
+    <condition property="bundle.version.string" value="${bundle.version.major}.${bundle.version.minor}.${net.evalcode.bundle.version.build}">
+      <isset property="net.evalcode.bundle.version.build"/>
+    </condition>
+    <property name="bundle.version.string" value="${bundle.version.major}.${bundle.version.minor}.${bundle.version.build}"/>
+    <!-- assemble file names -->
+    <property name="file.dist.prefix" value="${bundle.name.full}-${bundle.version.string}"/>
+    <property name="file.dist.src.zip" value="${file.dist.prefix}-src.zip"/>
+    <property name="file.dist.bin.zip" value="${file.dist.prefix}-bin.zip"/>
+    <property name="file.dist.doc.zip" value="${file.dist.prefix}-doc.zip"/>
+    <property name="file.dist.bin.jar" value="${file.dist.prefix}.jar"/>
+  </target>
+
+
+  <!-- clean -->
+  <target name="clean">
+    <delete dir="${dir.lib.build}" includeemptydirs="true"/>
+    <delete dir="${dir.lib.test}" includeemptydirs="true"/>
+    <delete dir="${dir.build}" includeemptydirs="true"/>
+    <delete dir="${dir.dist}" defaultexcludes="true">
+      <include name="*.jar"/>
+      <include name="*.zip"/>
+    </delete>
+  </target>
+
+  <target name="clean.build">
+    <delete dir=".clover" includeemptydirs="true"/>
+    <delete dir="${dir.build}" includeemptydirs="true"/>
+  </target>
+
+
+  <!-- prepare -->
+  <target name="prepare" depends="clean.build,env">
+    <mkdir dir="${dir.build}"/>
+    <mkdir dir="${dir.build.main}"/>
+    <mkdir dir="${dir.build.plugins}"/>
+    <mkdir dir="${dir.build.test.instrumented}"/>
+    <mkdir dir="${dir.build.test.classes}"/>
+    <mkdir dir="${dir.build.itest.instrumented}"/>
+    <mkdir dir="${dir.build.itest.classes}"/>
+    <copy todir="${dir.build.main}">
+      <fileset refid="resources.main"/>
+    </copy>
+    <copy todir="${dir.build.test.classes}">
+      <fileset refid="resources.test"/>
+    </copy>
+  </target>
+
+
+  <!-- resolve -->
+  <target name="resolve" depends="prepare">
+    <ivy:resolve />
+    <ivy:retrieve pattern="${dir.build.plugins}/[organisation].[artifact]-[revision].[ext]"/>
+    <unjar dest="${dir.build.plugins}">
+      <fileset dir="${dir.build.plugins}">
+        <include name="*.jar"/>
+      </fileset>
+    </unjar>
+    <path id="classpath.compile">
+      <fileset dir="${dir.lib.common}">
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${dir.lib.standalone}">
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${dir.build.plugins}">
+        <include name="*.jar"/>
+        <include name="**/*.jar"/>
+      </fileset>
+    </path>
+  </target>
+
+
+  <!-- compile sources -->
+  <target name="compile" depends="resolve">
+    <!-- compile main sources -->
+    <javac srcdir="${dir.src.main}" destdir="${dir.build.main}" source="${bundle.source.version}" verbose="true" debug="true" debuglevel="lines,source" fork="true" failonerror="true" includeantruntime="false">
+      <classpath refid="classpath.compile"/>
+    </javac>
+    <!-- instrument classes / unit tests -->
+    <clover-env/>
+    <clover-instrument srcdir="${dir.src.main}" destdir="${dir.build.test.instrumented}" source="${bundle.source.version}" testsrcdir="${dir.src.test}" recordTestResults="true"/>
+    <javac srcdir="${dir.build.test.instrumented}" destdir="${dir.build.test.classes}" source="${bundle.source.version}" debug="true" debuglevel="lines,source" fork="true" failonerror="true" includeantruntime="false">
+      <classpath refid="classpath.compile"/>
+      <classpath refid="classpath.net.evalcode.util.build.test"/>
+      <classpath refid="classpath.net.evalcode.util.build.common"/>
+    </javac>
+  </target>
+
+
+  <!-- test: unit tests -->
+  <target name="test.unit" depends="compile">
+    <junit fork="true" haltonerror="false" haltonfailure="false" printsummary="true" showoutput="true" failureproperty="net.evalcode.util.build.test.unit.failures">
+      <classpath path="${dir.build.test.classes}"/>
+      <classpath refid="classpath.compile"/>
+      <classpath refid="classpath.net.evalcode.util.build.test"/>
+      <classpath refid="classpath.net.evalcode.util.build.common"/>
+      <jvmarg value="-D${bundle.group}.log.level=INFO"/>
+      <jvmarg value="-D${bundle.group}.log.root=/tmp"/>
+      <formatter type="xml"/>
+      <batchtest fork="true" todir="${dir.build}">
+        <fileset dir="${dir.build.test.instrumented}">
+          <include name="**/*Test*"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+
+
+  <!-- static code analysis -->
+  <target name="analyze" depends="compile,
+    report.sloccount,
+    report.checkstyle,
+    report.findbugs,
+    report.pmd,
+    report.cpd,
+    report.clover"/>
+
+
+  <!-- build jar: osgi bundle -->
+  <target name="jar.bundle" depends="compile">
+    <copy file="${bundle.manifest.file}" todir="${dir.build}"/>
+    <replaceregexp file="${dir.build}/MANIFEST.MF" match="[0-1].[0-1].[0-1]" replace="${bundle.version.string}"/>
+    <replaceregexp file="${dir.build}/MANIFEST.MF" match="bin/main/classes" replace="."/>
+    <replaceregexp file="${dir.build}/MANIFEST.MF" match="lib/common/" replace="lib/" flags="gi"/>
+    <jar basedir="${dir.build.main}" destfile="${dir.dist}/${file.dist.bin.jar}" manifest="${dir.build}/MANIFEST.MF" update="false" compress="false" index="true">
+      <exclude name="MANIFEST.MF"/>
+      <zipfileset dir="${dir.lib.common}" prefix="lib" excludes=".gitignore"/>
+    </jar>
+  </target>
+
+
+  <!-- publish artifacts -->
+  <target name="publish" depends="jar.bundle">
+    <tstamp>
+      <format property="now" pattern="yyyyMMddHHmmss" locale="zh,CN"/> 
+    </tstamp>
+    <ivy:install from="local" to="remote" overwrite="true" validate="true" organisation="${bundle.group}" module="${bundle.name}" revision="${bundle.version.string}"/>
+  </target>
+
+
+  <!-- distribution: documentations -->
+  <target name="dist.documentations" depends="compile">
+    <javadoc destdir="${dir.doc.api}" charset="utf-8" encoding="utf-8"
+      doctitle="${doc.title}" windowtitle="${doc.title.window}"
+      header="${doc.header}" footer="${doc.footer}" bottom="${doc.bottom}"
+      author="true" version="true" use="true" access="private">
+      <sourcepath path="${dir.src.main}"/>
+      <excludepackage name="${bundle.name.full}.internal"/>
+      <excludepackage name="${bundle.name.full}.internal.**"/>
+      <classpath refid="classpath.compile"/>
+      <link href="http://docs.jboss.org/hibernate/core/3.6/javadocs/"/>
+      <link href="http://download.oracle.com/javaee/6/api/"/>
+      <link href="http://download.oracle.com/javase/7/docs/api/"/>
+      <link href="http://google-guice.googlecode.com/svn/tags/3.0/javadoc/"/>
+      <link href="http://jackson.codehaus.org/1.7.0/javadoc/"/>
+      <link href="http://junit.sourceforge.net/javadoc/"/>
+      <link href="http://mockito.googlecode.com/svn/branches/1.8.5/javadoc/"/>
+      <link href="http://www.osgi.org/javadoc/r4v42/"/>
+      <link href="http://www.slf4j.org/apidocs/"/>
+      <link href="http://services.evalcode.net/ci/job/net.evalcode.services.manager/javadoc/"/>
+    </javadoc>
+    <zip destfile="${dir.dist}/${file.dist.doc.zip}">
+      <zipfileset dir="${dir.doc.3rdparty}" prefix="doc/3rdparty" excludes=".gitignore"/>
+      <zipfileset dir="${dir.doc.api}" prefix="doc/api" excludes=".gitignore"/>
+    </zip>
+  </target>
+
+
+  <!-- distribution: binaries -->
+  <target name="dist.binaries" depends="jar.bundle">
+    <zip destfile="${dir.dist}/${file.dist.bin.zip}">
+      <zipfileset dir="${dir.dist}" includes="${file.dist.bin.jar}"/>
+    </zip>
+  </target>
+
+
+  <!-- build [default] -->
+  <target name="build" depends="test.unit,jar.bundle">
+    <antcall target="clean.build"/>
+    <antcall target="uninstall.build"/>
+    <antcall target="uninstall.test"/>
+    <fail message="Unit Test Failed." if="net.evalcode.util.build.test.unit.failures"/>
+  </target>
+
+
+  <!-- build [continuous integration] -->
+  <target name="build.ci" depends="test.unit,analyze,dist.documentations,dist.binaries">
+    <fail message="Unit Test Failed." if="net.evalcode.util.build.test.unit.failures"/>
+  </target>
+
+
+</project>

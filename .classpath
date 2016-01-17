@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="bin/main/classes" path="src/main/java"/>
+	<classpathentry kind="src" output="bin/test/classes" path="src/test/java"/>
+	<classpathentry kind="lib" path="lib/test/org.junit.jar"/>
+	<classpathentry kind="lib" path="lib/test/org.mockito.jar"/>
+	<classpathentry kind="lib" path="lib/common/org.forgerock.i18n-1.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/common/org.forgerock.i18n.slf4j-1.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/common/org.forgerock.opendj-3.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/common/org.forgerock.opendj.grizzly-3.0.0.jar"/>
+	<classpathentry kind="lib" path="lib/common/org.forgerock.opendj.ldap-3.0.0-M2.jar"/>
+	<classpathentry kind="lib" path="lib/common/org.forgerock.util-1.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/common/org.glassfish.grizzly-2.3.14.jar"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ivy-module version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+  <info organisation="${bundle.group}" module="${bundle.name}" revision="1.0.0" status="release">
+    <description homepage="${bundle.url}">
+      ${bundle.name.full}
+    </description>
+  </info>
+  <configurations>
+    <conf name="default" visibility="public"/>
+  </configurations>
+  <dependencies>
+    <dependency name="http" rev="latest.integration" conf="default"/>
+    <dependency name="lib" rev="latest.integration" conf="default"/>
+    <dependency name="manager" rev="latest.integration" conf="default"/>
+    <dependency org="org.eclipse" name="osgi" rev="latest.integration" conf="default"/>
+  </dependencies>
+</ivy-module>
