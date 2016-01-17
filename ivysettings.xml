@@ -7,6 +7,6 @@
       <ivy pattern="${ivy.settings.dir}/dist/[organisation].[artifact]-[revision].xml"/>
       <artifact pattern="${ivy.settings.dir}/dist/[organisation].[artifact]-[revision].[ext]"/>
     </filesystem>
-    <ibiblio name="remote" m2compatible="true" root="http://services.evalcode.net/dist/util"/>
+    <ibiblio name="remote" m2compatible="true" root="http://services.evalcode.net/dist"/>
   </resolvers>
 </ivy-settings>

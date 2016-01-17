@@ -164,7 +164,7 @@
   <!-- publish artifacts -->
   <target name="publish" depends="jar.bundle">
     <tstamp>
-      <format property="now" pattern="yyyyMMddHHmmss" locale="zh,CN"/> 
+      <format property="now" pattern="yyyyMMddHHmmss" locale="en_US"/> 
     </tstamp>
     <ivy:install from="local" to="remote" overwrite="true" validate="true" organisation="${bundle.group}" module="${bundle.name}" revision="${bundle.version.string}"/>
   </target>
@@ -189,7 +189,8 @@
       <link href="http://mockito.googlecode.com/svn/branches/1.8.5/javadoc/"/>
       <link href="http://www.osgi.org/javadoc/r4v42/"/>
       <link href="http://www.slf4j.org/apidocs/"/>
-      <link href="http://services.evalcode.net/ci/job/net.evalcode.services.manager/javadoc/"/>
+      <link href="http://services.evalcode.net/doc/api/net.evalcode.services.manager/"/>
+      <link href="http://services.evalcode.net/doc/api/net.evalcode.services.http/"/>
     </javadoc>
     <zip destfile="${dir.dist}/${file.dist.doc.zip}">
       <zipfileset dir="${dir.doc.3rdparty}" prefix="doc/3rdparty" excludes=".gitignore"/>
