@@ -105,13 +105,13 @@
   <!-- compile sources -->
   <target name="compile" depends="resolve">
     <!-- compile main sources -->
-    <javac srcdir="${dir.src.main}" destdir="${dir.build.main}" source="${bundle.source.version}" verbose="true" debug="true" debuglevel="lines,source" fork="true" failonerror="true" includeantruntime="false">
+    <javac srcdir="${dir.src.main}" destdir="${dir.build.main}" source="${source.version}" verbose="true" debug="true" debuglevel="lines,source" fork="true" failonerror="true" includeantruntime="false">
       <classpath refid="classpath.compile"/>
     </javac>
     <!-- instrument classes / unit tests -->
     <clover-env/>
-    <clover-instrument srcdir="${dir.src.main}" destdir="${dir.build.test.instrumented}" source="${bundle.source.version}" testsrcdir="${dir.src.test}" recordTestResults="true"/>
-    <javac srcdir="${dir.build.test.instrumented}" destdir="${dir.build.test.classes}" source="${bundle.source.version}" debug="true" debuglevel="lines,source" fork="true" failonerror="true" includeantruntime="false">
+    <clover-instrument srcdir="${dir.src.main}" destdir="${dir.build.test.instrumented}" source="${source.version}" testsrcdir="${dir.src.test}" recordTestResults="true"/>
+    <javac srcdir="${dir.build.test.instrumented}" destdir="${dir.build.test.classes}" source="${source.version}" debug="true" debuglevel="lines,source" fork="true" failonerror="true" includeantruntime="false">
       <classpath refid="classpath.compile"/>
       <classpath refid="classpath.net.evalcode.util.build.test"/>
       <classpath refid="classpath.net.evalcode.util.build.common"/>
@@ -164,7 +164,7 @@
   <!-- publish artifacts -->
   <target name="publish" depends="jar.bundle">
     <tstamp>
-      <format property="now" pattern="yyyyMMddHHmmss" locale="en_US"/> 
+      <format property="now" pattern="yyyyMMddHHmmss" locale="en,US"/> 
     </tstamp>
     <ivy:install from="local" to="remote" overwrite="true" validate="true" organisation="${bundle.group}" module="${bundle.name}" revision="${bundle.version.string}"/>
   </target>
@@ -181,16 +181,16 @@
       <excludepackage name="${bundle.name.full}.internal.**"/>
       <classpath refid="classpath.compile"/>
       <link href="http://docs.jboss.org/hibernate/core/3.6/javadocs/"/>
-      <link href="http://download.oracle.com/javaee/6/api/"/>
-      <link href="http://download.oracle.com/javase/7/docs/api/"/>
+      <link href="http://download.oracle.com/javaee/7/api/"/>
+      <link href="http://download.oracle.com/javase/8/docs/api/"/>
       <link href="http://google-guice.googlecode.com/svn/tags/3.0/javadoc/"/>
       <link href="http://jackson.codehaus.org/1.7.0/javadoc/"/>
       <link href="http://junit.sourceforge.net/javadoc/"/>
       <link href="http://mockito.googlecode.com/svn/branches/1.8.5/javadoc/"/>
       <link href="http://www.osgi.org/javadoc/r4v42/"/>
       <link href="http://www.slf4j.org/apidocs/"/>
-      <link href="http://services.evalcode.net/doc/api/net.evalcode.services.manager/"/>
-      <link href="http://services.evalcode.net/doc/api/net.evalcode.services.http/"/>
+      <link href="http://services.evalcode.net/manager/doc/api/"/>
+      <link href="http://services.evalcode.net/http/doc/api/"/>
     </javadoc>
     <zip destfile="${dir.dist}/${file.dist.doc.zip}">
       <zipfileset dir="${dir.doc.3rdparty}" prefix="doc/3rdparty" excludes=".gitignore"/>
